@@ -33,13 +33,14 @@ namespace OWSpawnPoints
             var spawnMenu = ModHelper.Menus.PauseMenu.Copy("Spawn Points");
             var sourceButton = spawnMenu.Buttons[0];
 
-
             foreach (var button in spawnMenu.Buttons)
             {
                 button.Hide();
             }
 
             mainButton.OnClick += () => spawnMenu.Open();
+            spawnMenu.Menu.transform.localScale *= 0.5f;
+            spawnMenu.Menu.transform.localPosition *= 0.5f;
 
             var astroObjects = FindObjectsOfType<AstroObject>();
 
@@ -81,6 +82,8 @@ namespace OWSpawnPoints
                 }
 
                 var playerMenu = ModHelper.Menus.PauseMenu.Copy("Player Spawns");
+                playerMenu.Menu.transform.localScale *= 0.5f;
+                playerMenu.Menu.transform.localPosition *= 0.5f;
                 foreach (var button in playerMenu.Buttons)
                 {
                     button.Hide();
