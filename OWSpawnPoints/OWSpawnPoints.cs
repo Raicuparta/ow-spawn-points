@@ -2,8 +2,10 @@
 using OWML.ModHelper;
 using UnityEngine;
 using OWML.ModHelper.Events;
-
-
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using OWML.Common.Menus;
 
 namespace OWSpawnPoints
 {
@@ -30,23 +32,28 @@ namespace OWSpawnPoints
             _fluidDetector = Locator.GetPlayerCamera().GetComponentInChildren<FluidDetector>();
 
             var mainButton = ModHelper.Menus.PauseMenu.OptionsButton.Duplicate("Teleport to...");
-            var spawnMenu = ModHelper.Menus.PauseMenu.Copy("Spawn Points");
-            var sourceButton = spawnMenu.Buttons[0];
 
-            foreach (var button in spawnMenu.Buttons)
-            {
-                button.Hide();
-            }
+            var shipSpawnMenu = ModHelper.Menus.PauseMenu.Copy("Ship Spawn Points");
+            shipSpawnMenu.Buttons.ForEach(button => button.Hide());
+            shipSpawnMenu.Menu.transform.localScale *= 0.5f;
+            shipSpawnMenu.Menu.transform.localPosition *= 0.5f;
 
-            mainButton.OnClick += () => spawnMenu.Open();
-            spawnMenu.Menu.transform.localScale *= 0.5f;
-            spawnMenu.Menu.transform.localPosition *= 0.5f;
+            var playerSpawnMenu = ModHelper.Menus.PauseMenu.Copy("Player Spawn Points");
+            playerSpawnMenu.Buttons.ForEach(button => button.Hide());
+            playerSpawnMenu.Menu.transform.localScale *= 0.5f;
+            playerSpawnMenu.Menu.transform.localPosition *= 0.5f;
+
+            var sourceButton = shipSpawnMenu.Buttons[0];
+
+            mainButton.OnClick += () => (PlayerState.IsInsideShip() ? shipSpawnMenu : playerSpawnMenu).Open();
 
             var astroObjects = FindObjectsOfType<AstroObject>();
 
             foreach (var astroObject in astroObjects)
             {
-                var spawnPoints = astroObject.GetComponentsInChildren<SpawnPoint>(true);
+                var allSpawnPoints = astroObject.GetComponentsInChildren<SpawnPoint>(true);
+                var shipSpawnPoints = allSpawnPoints.Where(point => point.IsShipSpawn()).ToList();
+                var playerSpawnPoints = allSpawnPoints.Where(point => !point.IsShipSpawn()).ToList();
 
                 var astroName = astroObject.GetAstroObjectName();
                 var name = astroName.ToString();
@@ -60,72 +67,51 @@ namespace OWSpawnPoints
                     name = astroObject.name;
                 }
 
-                if (spawnPoints.Length == 0)
+                if (allSpawnPoints.Length == 0)
                 {
                     continue;
                 }
 
-                var subMenu = ModHelper.Menus.PauseMenu.Copy(name);
-                foreach (var button in subMenu.Buttons)
+                void CreateSpawnPointList(List<SpawnPoint> spawnPoints, IModPopupMenu spawnMenu)
                 {
-                    button.Hide();
-                }
+                    var subMenu = ModHelper.Menus.PauseMenu.Copy("Spawn Points");
+                    subMenu.Buttons.ForEach(button => button.Hide());
+                    subMenu.Menu.transform.localScale *= 0.5f;
+                    subMenu.Menu.transform.localPosition *= 0.5f;
 
-                var subButton = spawnMenu.AddButton(sourceButton.Copy(name));
-                subButton.OnClick += () => subMenu.Open();
-                subButton.Show();
+                    var subButton = spawnMenu.AddButton(sourceButton.Copy(name));
+                    subButton.OnClick += () => subMenu.Open();
+                    subButton.Show();
 
-                var shipMenu = ModHelper.Menus.PauseMenu.Copy("Ship Spawns");
-                foreach (var button in shipMenu.Buttons)
-                {
-                    button.Hide();
-                }
-
-                var playerMenu = ModHelper.Menus.PauseMenu.Copy("Player Spawns");
-                playerMenu.Menu.transform.localScale *= 0.5f;
-                playerMenu.Menu.transform.localPosition *= 0.5f;
-                foreach (var button in playerMenu.Buttons)
-                {
-                    button.Hide();
-                }
-
-                var shipMenuButton = subMenu.AddButton(sourceButton.Copy("Ship Spawns"));
-                shipMenuButton.OnClick += () => shipMenu.Open();
-                shipMenuButton.Show();
-
-                var playerMenuButton = subMenu.AddButton(sourceButton.Copy("Player Spawns"));
-                playerMenuButton.OnClick += () => playerMenu.Open();
-                playerMenuButton.Show();
-
-                var shipCount = 0;
-                var playerCount = 0;
-                for (var i = 0; i < spawnPoints.Length; i++)
-                {
-                    var point = spawnPoints[i];
-
-                    var menu = point.IsShipSpawn() ? shipMenu : playerMenu;
-
-                    if (point.IsShipSpawn())
+                    var shipCount = 0;
+                    var playerCount = 0;
+                    for (var i = 0; i < spawnPoints.Count; i++)
                     {
-                        shipCount++;
-                    }
-                    else
-                    {
-                        playerCount++;
-                    }
+                        var point = spawnPoints[i];
 
-                    var spawnButton = menu.AddButton(sourceButton.Copy(point.name));
-                    spawnButton.OnClick += () => SpawnAt(point);
-                    spawnButton.Show();
+                        if (point.IsShipSpawn())
+                        {
+                            shipCount++;
+                        }
+                        else
+                        {
+                            playerCount++;
+                        }
+
+                        var spawnButton = subMenu.AddButton(sourceButton.Copy(point.name));
+                        spawnButton.OnClick += () => SpawnAt(point);
+                        spawnButton.Show();
+                    }
                 }
 
-                if (shipCount == 0)
+                if (shipSpawnPoints.Count > 0)
                 {
-                    shipMenuButton.Hide();
+                    CreateSpawnPointList(shipSpawnPoints, shipSpawnMenu);
                 }
-                if (playerCount == 0)
+
+                if (playerSpawnPoints.Count > 0)
                 {
-                    playerMenuButton.Hide();
+                    CreateSpawnPointList(playerSpawnPoints, playerSpawnMenu);
                 }
             }
         }
