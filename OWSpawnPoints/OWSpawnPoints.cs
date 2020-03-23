@@ -47,7 +47,7 @@ namespace OWSpawnPoints
 
             mainButton.OnClick += () => (PlayerState.IsInsideShip() ? shipSpawnMenu : playerSpawnMenu).Open();
 
-            var astroObjects = FindObjectsOfType<AstroObject>();
+            var astroObjects = FindObjectsOfType<AstroObject>().ToList();
 
             foreach (var astroObject in astroObjects)
             {
@@ -55,21 +55,28 @@ namespace OWSpawnPoints
                 var shipSpawnPoints = allSpawnPoints.Where(point => point.IsShipSpawn()).ToList();
                 var playerSpawnPoints = allSpawnPoints.Where(point => !point.IsShipSpawn()).ToList();
 
-                var astroName = astroObject.GetAstroObjectName();
-                var name = astroName.ToString();
+                var astroNameEnum = astroObject.GetAstroObjectName();
+                var astroName = astroNameEnum.ToString();
 
-                if (astroName == AstroObject.Name.CustomString)
+                if (astroNameEnum == AstroObject.Name.CustomString)
                 {
-                    name = astroObject.GetCustomName();
+                    astroName = astroObject.GetCustomName();
                 }
-                else if (astroName == AstroObject.Name.None || name == null || name == "")
+                else if (astroNameEnum == AstroObject.Name.None || astroName == null || astroName == "")
                 {
-                    name = astroObject.name;
+                    astroName = astroObject.name;
                 }
 
                 if (allSpawnPoints.Length == 0)
                 {
                     continue;
+                }
+
+                void CreateSpawnPointButton(SpawnPoint spawnPoint, IModPopupMenu spawnMenu, string name)
+                {
+                    var subButton = spawnMenu.AddButton(sourceButton.Copy(name));
+                    subButton.OnClick += () => SpawnAt(spawnPoint);
+                    subButton.Show();
                 }
 
                 void CreateSpawnPointList(List<SpawnPoint> spawnPoints, IModPopupMenu spawnMenu)
@@ -79,39 +86,33 @@ namespace OWSpawnPoints
                     subMenu.Menu.transform.localScale *= 0.5f;
                     subMenu.Menu.transform.localPosition *= 0.5f;
 
-                    var subButton = spawnMenu.AddButton(sourceButton.Copy(name));
+                    var subButton = spawnMenu.AddButton(sourceButton.Copy($"{astroName}..."));
                     subButton.OnClick += () => subMenu.Open();
                     subButton.Show();
 
-                    var shipCount = 0;
-                    var playerCount = 0;
                     for (var i = 0; i < spawnPoints.Count; i++)
                     {
                         var point = spawnPoints[i];
-
-                        if (point.IsShipSpawn())
-                        {
-                            shipCount++;
-                        }
-                        else
-                        {
-                            playerCount++;
-                        }
-
-                        var spawnButton = subMenu.AddButton(sourceButton.Copy(point.name));
-                        spawnButton.OnClick += () => SpawnAt(point);
-                        spawnButton.Show();
+                        CreateSpawnPointButton(point, subMenu, point.name);
                     }
                 }
 
-                if (shipSpawnPoints.Count > 0)
+                if (shipSpawnPoints.Count > 1)
                 {
                     CreateSpawnPointList(shipSpawnPoints, shipSpawnMenu);
                 }
+                else if (shipSpawnPoints.Count == 1)
+                {
+                    CreateSpawnPointButton(shipSpawnPoints[0], shipSpawnMenu, astroName);
+                }
 
-                if (playerSpawnPoints.Count > 0)
+                if (playerSpawnPoints.Count > 1)
                 {
                     CreateSpawnPointList(playerSpawnPoints, playerSpawnMenu);
+                }
+                else if (playerSpawnPoints.Count == 1)
+                {
+                    CreateSpawnPointButton(playerSpawnPoints[0], playerSpawnMenu, astroName);
                 }
             }
         }
