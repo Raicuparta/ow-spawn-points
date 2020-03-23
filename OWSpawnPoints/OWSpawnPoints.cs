@@ -83,7 +83,14 @@ namespace OWSpawnPoints
                 void CreateSpawnPointButton(SpawnPoint spawnPoint, IModPopupMenu spawnMenu, string name)
                 {
                     var subButton = spawnMenu.AddButton(sourceButton.Copy(name));
-                    subButton.OnClick += () => SpawnAt(spawnPoint);
+                    subButton.OnClick += () =>
+                    {
+                        spawnMenu.Close();
+                        shipSpawnMenu.Close();
+                        playerSpawnMenu.Close();
+                        ModHelper.Menus.PauseMenu.Close();
+                        SpawnAt(spawnPoint);
+                    };
                     subButton.Show();
                 }
 
@@ -133,6 +140,7 @@ namespace OWSpawnPoints
             point.AddObjectToTriggerVolumes(Locator.GetPlayerDetector().gameObject);
             point.AddObjectToTriggerVolumes(_fluidDetector.gameObject);
             point.OnSpawnPlayer();
+            OWTime.Unpause(OWTime.PauseType.Menu);
         }
     }
 }
