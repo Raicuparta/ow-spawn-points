@@ -48,10 +48,23 @@ namespace OWSpawnPoints
             mainButton.OnClick += () => (PlayerState.IsInsideShip() ? shipSpawnMenu : playerSpawnMenu).Open();
 
             var astroObjects = FindObjectsOfType<AstroObject>().ToList();
+            var astroSpawnPoints = new Dictionary<AstroObject, SpawnPoint[]>();
 
             foreach (var astroObject in astroObjects)
             {
-                var allSpawnPoints = astroObject.GetComponentsInChildren<SpawnPoint>(true);
+                astroSpawnPoints[astroObject] = astroObject.GetComponentsInChildren<SpawnPoint>(true);
+            }
+
+            astroObjects.Sort((a, b) => astroSpawnPoints[a].Length.CompareTo(astroSpawnPoints[b].Length));
+
+            foreach (var astroObject in astroObjects)
+            {
+                var allSpawnPoints = astroSpawnPoints[astroObject];
+                if (allSpawnPoints.Length == 0)
+                {
+                    continue;
+                }
+
                 var shipSpawnPoints = allSpawnPoints.Where(point => point.IsShipSpawn()).ToList();
                 var playerSpawnPoints = allSpawnPoints.Where(point => !point.IsShipSpawn()).ToList();
 
@@ -65,11 +78,6 @@ namespace OWSpawnPoints
                 else if (astroNameEnum == AstroObject.Name.None || astroName == null || astroName == "")
                 {
                     astroName = astroObject.name;
-                }
-
-                if (allSpawnPoints.Length == 0)
-                {
-                    continue;
                 }
 
                 void CreateSpawnPointButton(SpawnPoint spawnPoint, IModPopupMenu spawnMenu, string name)
