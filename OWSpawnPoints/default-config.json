@@ -2,7 +2,5 @@
   "requireVR": false,
   "enabled": true,
   "settings": {
-    "initialSpawnPoint": "",
-    "initialAstroObject": ""
   }
 }
