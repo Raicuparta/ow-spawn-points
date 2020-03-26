@@ -83,8 +83,8 @@ namespace OWSpawnPoints
                 var subButton = spawnMenu.AddButton(sourceButton.Copy(name));
                 subButton.OnClick += () =>
                 {
-                    CloseMenu();
                     spawnMenu.Close();
+                    CloseMenu();
                     SpawnAt(spawnPoint);
                     _prevSpawnPoint = spawnPoint;
                     _prevAstroObject = astroObject;
@@ -142,11 +142,21 @@ namespace OWSpawnPoints
                 }
             }
 
-            var saveButton = sourceButton.Copy("[ Save last used spawn point as initial ]");
+            var clearSaveButton = sourceButton.Copy("RESET INITIAL SPAWN POINT");
+            clearSaveButton.OnClick += () =>
+            {
+                ResetInitialSpawnPoint();
+                CloseMenu();
+            };
+            clearSaveButton.Show();
+            shipSpawnMenu.AddButton(clearSaveButton);
+            playerSpawnMenu.AddButton(clearSaveButton);
+
+            var saveButton = sourceButton.Copy("[[[ SAVE LAST USED SPAWN POINT AS INITIAL ]]]");
             saveButton.OnClick += () =>
             {
-                CloseMenu();
                 SetInitialSpawnPoint();
+                CloseMenu();
             };
             saveButton.Show();
             shipSpawnMenu.AddButton(saveButton);
@@ -174,6 +184,13 @@ namespace OWSpawnPoints
         {
             _saveFile.initialAstroObject = _prevAstroObject.gameObject.name;
             _saveFile.initialSpawnPoint = _prevSpawnPoint.gameObject.name;
+            ModHelper.Storage.Save(_saveFile, SAVE_FILE);
+        }
+
+        private void ResetInitialSpawnPoint()
+        {
+            _saveFile.initialAstroObject = "";
+            _saveFile.initialSpawnPoint = "";
             ModHelper.Storage.Save(_saveFile, SAVE_FILE);
         }
 
