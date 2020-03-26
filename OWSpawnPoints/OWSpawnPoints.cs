@@ -271,7 +271,7 @@ namespace OWSpawnPoints
 
         void LateUpdate()
         {
-            if (_isSolarSystemLoaded)
+            if (_isSolarSystemLoaded && _saveFile.initialAstroObject != "" && _saveFile.initialSpawnPoint != "")
             {
                 InstantWakeUp();
             }
