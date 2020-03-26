@@ -106,7 +106,6 @@ namespace OWSpawnPoints
                         SpawnAt(spawnPoint);
                         _prevSpawnPoint = spawnPoint;
                         _prevAstroObject = astroObject;
-                        SetInitialSpawnPoint();
                     };
                     subButton.Show();
                 }
@@ -146,6 +145,12 @@ namespace OWSpawnPoints
                 {
                     CreateSpawnPointButton(playerSpawnPoints[0], playerSpawnMenu, astroName);
                 }
+
+                var saveButton = sourceButton.Copy("[ Save last used spawn point as initial ]");
+                saveButton.OnClick += SetInitialSpawnPoint;
+                saveButton.Show();
+                shipSpawnMenu.AddButton(saveButton);
+                playerSpawnMenu.AddButton(saveButton);
             }
         }
 
