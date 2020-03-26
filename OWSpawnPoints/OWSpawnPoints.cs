@@ -152,7 +152,7 @@ namespace OWSpawnPoints
             shipSpawnMenu.AddButton(clearSaveButton);
             playerSpawnMenu.AddButton(clearSaveButton);
 
-            var saveButton = sourceButton.Copy("[[[ SAVE LAST USED SPAWN POINT AS INITIAL ]]]");
+            var saveButton = sourceButton.Copy("SAVE LAST USED AS INITIAL");
             saveButton.OnClick += () =>
             {
                 SetInitialSpawnPoint();
