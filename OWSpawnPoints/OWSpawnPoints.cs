@@ -203,25 +203,13 @@ namespace OWSpawnPoints
         {
             var astroName = _saveFile.initialAstroObject;
             var spawnPointName = _saveFile.initialSpawnPoint;
+            if (astroName == "" || spawnPointName == "") return;
 
-            if (astroName == "" || spawnPointName == "")
-            {
-                ModHelper.Console.WriteLine("Empty");
-                return;
-            }
             var astroObjectGO = GameObject.Find(astroName);
-            if (astroObjectGO == null)
-            {
-                ModHelper.Console.WriteLine("astroObjectGO null");
-                return;
-            }
+            if (astroObjectGO == null) return;
 
             var astroObject = astroObjectGO.GetComponent<AstroObject>();
-            if (astroObject == null)
-            {
-                ModHelper.Console.WriteLine("astroObject null");
-                return;
-            };
+            if (astroObject == null) return;
 
             var spawnPoints = astroObject.GetComponentsInChildren<SpawnPoint>();
             foreach (var point in spawnPoints)
@@ -232,7 +220,6 @@ namespace OWSpawnPoints
                     return;
                 }
             }
-            ModHelper.Console.WriteLine("didn't find shit");
         }
 
         private void SpawnAt(SpawnPoint point)
