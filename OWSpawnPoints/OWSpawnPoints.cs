@@ -134,9 +134,10 @@ namespace OWSpawnPoints
 
         private void SpawnAt(SpawnPoint point)
         {
-            OWRigidbody playerBody = Locator.GetPlayerBody();
-            playerBody.WarpToPositionRotation(point.transform.position, point.transform.rotation);
-            playerBody.SetVelocity(point.GetPointVelocity());
+            var body = PlayerState.IsInsideShip() ? Locator.GetShipBody() : Locator.GetPlayerBody();
+
+            body.WarpToPositionRotation(point.transform.position, point.transform.rotation);
+            body.SetVelocity(point.GetPointVelocity());
             point.AddObjectToTriggerVolumes(Locator.GetPlayerDetector().gameObject);
             point.AddObjectToTriggerVolumes(_fluidDetector.gameObject);
             point.OnSpawnPlayer();
