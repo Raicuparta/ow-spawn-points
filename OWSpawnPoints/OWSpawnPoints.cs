@@ -71,6 +71,45 @@ namespace OWSpawnPoints
 
             astroObjects.Sort((a, b) => astroSpawnPoints[a].Length.CompareTo(astroSpawnPoints[b].Length));
 
+            void CloseMenu()
+            {
+                shipSpawnMenu.Close();
+                playerSpawnMenu.Close();
+                ModHelper.Menus.PauseMenu.Close();
+            }
+
+            void CreateSpawnPointButton(SpawnPoint spawnPoint, AstroObject astroObject, IModPopupMenu spawnMenu, string name)
+            {
+                var subButton = spawnMenu.AddButton(sourceButton.Copy(name));
+                subButton.OnClick += () =>
+                {
+                    CloseMenu();
+                    spawnMenu.Close();
+                    SpawnAt(spawnPoint);
+                    _prevSpawnPoint = spawnPoint;
+                    _prevAstroObject = astroObject;
+                };
+                subButton.Show();
+            }
+
+            void CreateSpawnPointList(List<SpawnPoint> spawnPoints, AstroObject astroObject, IModPopupMenu spawnMenu)
+            {
+                var subMenu = ModHelper.Menus.PauseMenu.Copy("Spawn Points");
+                subMenu.Buttons.ForEach(button => button.Hide());
+                subMenu.Menu.transform.localScale *= 0.5f;
+                subMenu.Menu.transform.localPosition *= 0.5f;
+
+                var subButton = spawnMenu.AddButton(sourceButton.Copy($"{GetAstroObjectName(astroObject)}..."));
+                subButton.OnClick += () => subMenu.Open();
+                subButton.Show();
+
+                for (var i = 0; i < spawnPoints.Count; i++)
+                {
+                    var point = spawnPoints[i];
+                    CreateSpawnPointButton(point, astroObject, subMenu, point.name);
+                }
+            }
+
             foreach (var astroObject in astroObjects)
             {
                 var allSpawnPoints = astroSpawnPoints[astroObject];
@@ -82,76 +121,53 @@ namespace OWSpawnPoints
                 var shipSpawnPoints = allSpawnPoints.Where(point => point.IsShipSpawn()).ToList();
                 var playerSpawnPoints = allSpawnPoints.Where(point => !point.IsShipSpawn()).ToList();
 
-                var astroNameEnum = astroObject.GetAstroObjectName();
-                var astroName = astroNameEnum.ToString();
-
-                if (astroNameEnum == AstroObject.Name.CustomString)
-                {
-                    astroName = astroObject.GetCustomName();
-                }
-                else if (astroNameEnum == AstroObject.Name.None || astroName == null || astroName == "")
-                {
-                    astroName = astroObject.name;
-                }
-
-                void CreateSpawnPointButton(SpawnPoint spawnPoint, IModPopupMenu spawnMenu, string name)
-                {
-                    var subButton = spawnMenu.AddButton(sourceButton.Copy(name));
-                    subButton.OnClick += () =>
-                    {
-                        spawnMenu.Close();
-                        shipSpawnMenu.Close();
-                        playerSpawnMenu.Close();
-                        ModHelper.Menus.PauseMenu.Close();
-                        SpawnAt(spawnPoint);
-                        _prevSpawnPoint = spawnPoint;
-                        _prevAstroObject = astroObject;
-                    };
-                    subButton.Show();
-                }
-
-                void CreateSpawnPointList(List<SpawnPoint> spawnPoints, IModPopupMenu spawnMenu)
-                {
-                    var subMenu = ModHelper.Menus.PauseMenu.Copy("Spawn Points");
-                    subMenu.Buttons.ForEach(button => button.Hide());
-                    subMenu.Menu.transform.localScale *= 0.5f;
-                    subMenu.Menu.transform.localPosition *= 0.5f;
-
-                    var subButton = spawnMenu.AddButton(sourceButton.Copy($"{astroName}..."));
-                    subButton.OnClick += () => subMenu.Open();
-                    subButton.Show();
-
-                    for (var i = 0; i < spawnPoints.Count; i++)
-                    {
-                        var point = spawnPoints[i];
-                        CreateSpawnPointButton(point, subMenu, point.name);
-                    }
-                }
+                var astroName = GetAstroObjectName(astroObject);
 
                 if (shipSpawnPoints.Count > 1)
                 {
-                    CreateSpawnPointList(shipSpawnPoints, shipSpawnMenu);
+                    CreateSpawnPointList(shipSpawnPoints, astroObject, shipSpawnMenu);
                 }
                 else if (shipSpawnPoints.Count == 1)
                 {
-                    CreateSpawnPointButton(shipSpawnPoints[0], shipSpawnMenu, astroName);
+                    CreateSpawnPointButton(shipSpawnPoints[0], astroObject, shipSpawnMenu, astroName);
                 }
 
                 if (playerSpawnPoints.Count > 1)
                 {
-                    CreateSpawnPointList(playerSpawnPoints, playerSpawnMenu);
+                    CreateSpawnPointList(playerSpawnPoints, astroObject, playerSpawnMenu);
                 }
                 else if (playerSpawnPoints.Count == 1)
                 {
-                    CreateSpawnPointButton(playerSpawnPoints[0], playerSpawnMenu, astroName);
+                    CreateSpawnPointButton(playerSpawnPoints[0], astroObject, playerSpawnMenu, astroName);
                 }
-
-                var saveButton = sourceButton.Copy("[ Save last used spawn point as initial ]");
-                saveButton.OnClick += SetInitialSpawnPoint;
-                saveButton.Show();
-                shipSpawnMenu.AddButton(saveButton);
-                playerSpawnMenu.AddButton(saveButton);
             }
+
+            var saveButton = sourceButton.Copy("[ Save last used spawn point as initial ]");
+            saveButton.OnClick += () =>
+            {
+                CloseMenu();
+                SetInitialSpawnPoint();
+            };
+            saveButton.Show();
+            shipSpawnMenu.AddButton(saveButton);
+            playerSpawnMenu.AddButton(saveButton);
+        }
+
+        string GetAstroObjectName(AstroObject astroObject)
+        {
+            var astroNameEnum = astroObject.GetAstroObjectName();
+            var astroName = astroNameEnum.ToString();
+
+            if (astroNameEnum == AstroObject.Name.CustomString)
+            {
+                return astroObject.GetCustomName();
+            }
+            else if (astroNameEnum == AstroObject.Name.None || astroName == null || astroName == "")
+            {
+                return astroObject.name;
+            }
+
+            return astroName;
         }
 
         private void SetInitialSpawnPoint()
