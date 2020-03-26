@@ -254,6 +254,8 @@ namespace OWSpawnPoints
             OWInput.ChangeInputMode(InputMode.Character);
             typeof(OWInput).SetValue("_inputFadeFraction", 0f);
             GlobalMessenger.FireEvent("TakeFirstFlashbackSnapshot");
+
+            Locator.GetPlayerSuit().SuitUp();
         }
 
         void LateUpdate()
