@@ -84,6 +84,9 @@
     <None Include="manifest.json" />
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="savefile.json" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>md "$(StartWorkingDirectory)\Mods\$(ProjectName)"
@@ -94,6 +97,7 @@ copy /y "$(TargetPath)" "$(StartWorkingDirectory)\Mods\$(ProjectName)"
 copy /y "$(ProjectDir)\default-config.json" "$(StartWorkingDirectory)\Mods\$(ProjectName)"
 
 copy /y "$(ProjectDir)\manifest.json" "$(StartWorkingDirectory)\Mods\$(ProjectName)"
-</PostBuildEvent>
+
+copy /y "$(ProjectDir)\savefile.json" "$(StartWorkingDirectory)\Mods\$(ProjectName)"</PostBuildEvent>
   </PropertyGroup>
 </Project>
