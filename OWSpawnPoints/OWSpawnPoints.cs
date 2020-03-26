@@ -12,11 +12,24 @@ namespace OWSpawnPoints
     public class OWSpawnPoints : ModBehaviour
     {
         private FluidDetector _fluidDetector;
+        SpawnPoint _prevSpawnPoint;
+        AstroObject _prevAstroObject;
+        SaveFile _saveFile;
+        const string SAVE_FILE = "savefile.json";
 
         private void Start()
         {
             ModHelper.Events.Subscribe<Flashlight>(Events.AfterStart);
             ModHelper.Events.OnEvent += OnEvent;
+
+            _saveFile = ModHelper.Storage.Load<SaveFile>(SAVE_FILE);
+
+            LoadManager.OnCompleteSceneLoad += OnSceneLoaded;
+        }
+
+        void OnSceneLoaded(OWScene originalScene, OWScene scene)
+        {
+            SpawnAtInitialPoint();
         }
 
         private void OnEvent(MonoBehaviour behaviour, Events ev)
@@ -24,6 +37,7 @@ namespace OWSpawnPoints
             if (behaviour.GetType() == typeof(Flashlight) && ev == Events.AfterStart)
             {
                 Init();
+                SpawnAtInitialPoint();
             }
         }
 
@@ -90,6 +104,9 @@ namespace OWSpawnPoints
                         playerSpawnMenu.Close();
                         ModHelper.Menus.PauseMenu.Close();
                         SpawnAt(spawnPoint);
+                        _prevSpawnPoint = spawnPoint;
+                        _prevAstroObject = astroObject;
+                        SetInitialSpawnPoint();
                     };
                     subButton.Show();
                 }
@@ -130,6 +147,49 @@ namespace OWSpawnPoints
                     CreateSpawnPointButton(playerSpawnPoints[0], playerSpawnMenu, astroName);
                 }
             }
+        }
+
+        private void SetInitialSpawnPoint()
+        {
+            _saveFile.initialAstroObject = _prevAstroObject.gameObject.name;
+            _saveFile.initialSpawnPoint = _prevSpawnPoint.gameObject.name;
+            ModHelper.Storage.Save(_saveFile, SAVE_FILE);
+        }
+
+        void SpawnAtInitialPoint()
+        {
+            var astroName = _saveFile.initialAstroObject;
+            var spawnPointName = _saveFile.initialSpawnPoint;
+
+            if (astroName == "" || spawnPointName == "")
+            {
+                ModHelper.Console.WriteLine("Empty");
+                return;
+            }
+            var astroObjectGO = GameObject.Find(astroName);
+            if (astroObjectGO == null)
+            {
+                ModHelper.Console.WriteLine("astroObjectGO null");
+                return;
+            }
+
+            var astroObject = astroObjectGO.GetComponent<AstroObject>();
+            if (astroObject == null)
+            {
+                ModHelper.Console.WriteLine("astroObject null");
+                return;
+            };
+
+            var spawnPoints = astroObject.GetComponentsInChildren<SpawnPoint>();
+            foreach (var point in spawnPoints)
+            {
+                if (point.gameObject.name == spawnPointName)
+                {
+                    FindObjectOfType<PlayerSpawner>().SetInitialSpawnPoint(point);
+                    return;
+                }
+            }
+            ModHelper.Console.WriteLine("didn't find shit");
         }
 
         private void SpawnAt(SpawnPoint point)
