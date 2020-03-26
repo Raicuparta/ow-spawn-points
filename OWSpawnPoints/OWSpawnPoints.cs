@@ -15,6 +15,7 @@ namespace OWSpawnPoints
         SpawnPoint _prevSpawnPoint;
         AstroObject _prevAstroObject;
         SaveFile _saveFile;
+        bool _isSolarSystemLoaded;
         const string SAVE_FILE = "savefile.json";
 
         private void Start()
@@ -29,7 +30,11 @@ namespace OWSpawnPoints
 
         void OnSceneLoaded(OWScene originalScene, OWScene scene)
         {
-            SpawnAtInitialPoint();
+            if (scene == OWScene.SolarSystem || scene == OWScene.EyeOfTheUniverse)
+            {
+                _isSolarSystemLoaded = true;
+                SpawnAtInitialPoint();
+            }
         }
 
         private void OnEvent(MonoBehaviour behaviour, Events ev)
@@ -240,6 +245,36 @@ namespace OWSpawnPoints
             point.AddObjectToTriggerVolumes(_fluidDetector.gameObject);
             point.OnSpawnPlayer();
             OWTime.Unpause(OWTime.PauseType.Menu);
+        }
+
+        private void InstantWakeUp()
+        {
+            _isSolarSystemLoaded = false;
+            // Skip wake up animation.
+            var cameraEffectController = FindObjectOfType<PlayerCameraEffectController>();
+            cameraEffectController.OpenEyes(0, true);
+            cameraEffectController.SetValue("_wakeLength", 0f);
+            cameraEffectController.SetValue("_waitForWakeInput", false);
+
+            // Skip wake up prompt.
+            LateInitializerManager.pauseOnInitialization = false;
+            Locator.GetPauseCommandListener().RemovePauseCommandLock();
+            Locator.GetPromptManager().RemoveScreenPrompt(cameraEffectController.GetValue<ScreenPrompt>("_wakePrompt"));
+            OWTime.Unpause(OWTime.PauseType.Sleeping);
+            cameraEffectController.Invoke("WakeUp");
+
+            // Enable all inputs immedeately.
+            OWInput.ChangeInputMode(InputMode.Character);
+            typeof(OWInput).SetValue("_inputFadeFraction", 0f);
+            GlobalMessenger.FireEvent("TakeFirstFlashbackSnapshot");
+        }
+
+        void LateUpdate()
+        {
+            if (_isSolarSystemLoaded)
+            {
+                InstantWakeUp();
+            }
         }
     }
 }
