@@ -2,5 +2,6 @@
   "requireVR": false,
   "enabled": true,
   "settings": {
+	"suitUpOnTravel": true
   }
 }

@@ -17,15 +17,26 @@ namespace OWSpawnPoints
         SaveFile _saveFile;
         bool _isSolarSystemLoaded;
         const string SAVE_FILE = "savefile.json";
+        static IModHelper Helper;
+        bool _suitUpOnTravel = true;
 
         private void Start()
         {
+            Helper = ModHelper;
             ModHelper.Events.Subscribe<Flashlight>(Events.AfterStart);
-            ModHelper.Events.OnEvent += OnEvent;
+            ModHelper.Events.Event += OnEvent;
 
             _saveFile = ModHelper.Storage.Load<SaveFile>(SAVE_FILE);
 
             LoadManager.OnCompleteSceneLoad += OnSceneLoaded;
+
+            ModHelper.HarmonyHelper.AddPrefix<ProbePromptReceiver>("GainFocus", typeof(Patch), nameof(Patch.Enter));
+            ModHelper.HarmonyHelper.AddPrefix<ProbePromptReceiver>("LoseFocus", typeof(Patch), nameof(Patch.Exit));
+        }
+
+        public override void Configure(IModConfig config)
+        {
+            _suitUpOnTravel = config.GetSettingsValue<bool>("suitUpOnTravel");
         }
 
         void OnSceneLoaded(OWScene originalScene, OWScene scene)
@@ -88,6 +99,10 @@ namespace OWSpawnPoints
                 var subButton = spawnMenu.AddButton(sourceButton.Copy(name));
                 subButton.OnClick += () =>
                 {
+                    if (!OWTime.IsPaused())
+                    {
+                        return;
+                    }
                     spawnMenu.Close();
                     CloseMenu();
                     SpawnAt(spawnPoint);
@@ -232,6 +247,11 @@ namespace OWSpawnPoints
             point.AddObjectToTriggerVolumes(_fluidDetector.gameObject);
             point.OnSpawnPlayer();
             OWTime.Unpause(OWTime.PauseType.Menu);
+
+            if (_suitUpOnTravel)
+            {
+                Locator.GetPlayerSuit().SuitUp();
+            }
         }
 
         private void InstantWakeUp()
@@ -263,6 +283,18 @@ namespace OWSpawnPoints
             if (_isSolarSystemLoaded && _saveFile.initialAstroObject != "" && _saveFile.initialSpawnPoint != "")
             {
                 InstantWakeUp();
+            }
+        }
+
+        public class Patch
+        {
+            public static void Enter()
+            {
+                Helper.Console.WriteLine("Enter");
+            }
+            public static void Exit()
+            {
+                Helper.Console.WriteLine("Exit");
             }
         }
     }

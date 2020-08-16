@@ -35,31 +35,40 @@
       <HintPath>..\packages\Lib.Harmony.1.2.0.1\lib\net35\0Harmony.dll</HintPath>
     </Reference>
     <Reference Include="Assembly-CSharp">
-      <HintPath>..\..\..\..\..\Program Files\Epic Games\OuterWilds\OuterWilds_Data\Managed\Assembly-CSharp.dll</HintPath>
+      <HintPath>$(GameDir)\OuterWilds_Data\Managed\Assembly-CSharp.dll</HintPath>
     </Reference>
     <Reference Include="NAudio-Unity, Version=2.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\OWML.0.3.40\lib\net35\NAudio-Unity.dll</HintPath>
+      <HintPath>..\packages\OWML.0.7.3\lib\net35\NAudio-Unity.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=9.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Json.Net.Unity3D.9.0.1\lib\net35\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="OWML, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\OWML.0.3.40\lib\net35\OWML.dll</HintPath>
+      <HintPath>..\packages\OWML.0.7.3\lib\net35\OWML.dll</HintPath>
     </Reference>
     <Reference Include="OWML.Common, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\OWML.0.3.40\lib\net35\OWML.Common.dll</HintPath>
+      <HintPath>..\packages\OWML.0.7.3\lib\net35\OWML.Common.dll</HintPath>
+    </Reference>
+    <Reference Include="OWML.Logging, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\OWML.0.7.3\lib\net35\OWML.Logging.dll</HintPath>
     </Reference>
     <Reference Include="OWML.ModHelper, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\OWML.0.3.40\lib\net35\OWML.ModHelper.dll</HintPath>
+      <HintPath>..\packages\OWML.0.7.3\lib\net35\OWML.ModHelper.dll</HintPath>
     </Reference>
     <Reference Include="OWML.ModHelper.Assets, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\OWML.0.3.40\lib\net35\OWML.ModHelper.Assets.dll</HintPath>
+      <HintPath>..\packages\OWML.0.7.3\lib\net35\OWML.ModHelper.Assets.dll</HintPath>
     </Reference>
     <Reference Include="OWML.ModHelper.Events, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\OWML.0.3.40\lib\net35\OWML.ModHelper.Events.dll</HintPath>
+      <HintPath>..\packages\OWML.0.7.3\lib\net35\OWML.ModHelper.Events.dll</HintPath>
+    </Reference>
+    <Reference Include="OWML.ModHelper.Input, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\OWML.0.7.3\lib\net35\OWML.ModHelper.Input.dll</HintPath>
+    </Reference>
+    <Reference Include="OWML.ModHelper.Interaction, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\OWML.0.7.3\lib\net35\OWML.ModHelper.Interaction.dll</HintPath>
     </Reference>
     <Reference Include="OWML.ModHelper.Menus, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\OWML.0.3.40\lib\net35\OWML.ModHelper.Menus.dll</HintPath>
+      <HintPath>..\packages\OWML.0.7.3\lib\net35\OWML.ModHelper.Menus.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -70,7 +79,7 @@
     <Reference Include="UnityEngine, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null" />
     <Reference Include="UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\Program Files\Epic Games\OuterWilds\OuterWilds_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
+      <HintPath>$(GameDir)\OuterWilds_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.UI, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
   </ItemGroup>
@@ -89,15 +98,17 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>md "$(StartWorkingDirectory)\Mods\$(ProjectName)"
-del "$(StartWorkingDirectory)\Mods\$(ProjectName)\config.json"
+    <PostBuildEvent>
+      del "$(OwmlDir)\Mods\$(ProjectName)"
+      md "$(OwmlDir)\Mods\$(ProjectName)"
 
-copy /y "$(TargetPath)" "$(StartWorkingDirectory)\Mods\$(ProjectName)"
+      copy /y "$(TargetPath)" "$(OwmlDir)\Mods\$(ProjectName)"
 
-copy /y "$(ProjectDir)\default-config.json" "$(StartWorkingDirectory)\Mods\$(ProjectName)"
+      copy /y "$(ProjectDir)\default-config.json" "$(OwmlDir)\Mods\$(ProjectName)"
 
-copy /y "$(ProjectDir)\manifest.json" "$(StartWorkingDirectory)\Mods\$(ProjectName)"
+      copy /y "$(ProjectDir)\manifest.json" "$(OwmlDir)\Mods\$(ProjectName)"
 
-copy /y "$(ProjectDir)\savefile.json" "$(StartWorkingDirectory)\Mods\$(ProjectName)"</PostBuildEvent>
+      copy /y "$(ProjectDir)\savefile.json" "$(OwmlDir)\Mods\$(ProjectName)"
+  </PostBuildEvent>
   </PropertyGroup>
 </Project>
