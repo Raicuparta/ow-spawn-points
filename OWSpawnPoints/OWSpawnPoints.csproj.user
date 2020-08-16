@@ -4,6 +4,6 @@
     <ProjectView>ProjectFiles</ProjectView>
     <GameDir>C:\Program Files\Epic Games\OuterWilds</GameDir>
     <OwmlDir>C:\Users\ricar\AppData\Roaming\OuterWildsModManager\OWML</OwmlDir>
-    <ModUniqueName>Raicuparta.ModTemplate</ModUniqueName>
+    <ModUniqueName>Raicuparta.OWSpawnPoints</ModUniqueName>
   </PropertyGroup>
 </Project>
