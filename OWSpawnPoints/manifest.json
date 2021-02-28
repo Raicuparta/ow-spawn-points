@@ -4,6 +4,6 @@
   "name": "Spawn Points Teleport",
   "description": "Adds a menu that lets you teleport around the solar system.",
   "uniqueName": "Raicuparta.OWSpawnPoints",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "owmlVersion": "0.7.3"
 }

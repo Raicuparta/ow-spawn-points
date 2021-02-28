@@ -99,10 +99,6 @@ namespace OWSpawnPoints
                 var subButton = spawnMenu.AddButton(sourceButton.Copy(name));
                 subButton.OnClick += () =>
                 {
-                    if (!OWTime.IsPaused())
-                    {
-                        return;
-                    }
                     spawnMenu.Close();
                     CloseMenu();
                     SpawnAt(spawnPoint);
