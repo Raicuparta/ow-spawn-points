@@ -171,7 +171,7 @@ namespace OWSpawnPoints
                 }
                 else if (playerSpawnPoints.Count == 1)
                 {
-                    CreateSpawnPointButton(playerSpawnPoints[0], playerSpawnMenu, $"{astroName} - {shipSpawnPoints[0].name}");
+                    CreateSpawnPointButton(playerSpawnPoints[0], playerSpawnMenu, $"{astroName} - {playerSpawnPoints[0].name}");
                 }
             }
 
