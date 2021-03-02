@@ -15,12 +15,10 @@ namespace OWSpawnPoints
         private SaveFile _saveFile;
         private bool _isSolarSystemLoaded;
         private const string SAVE_FILE = "savefile.json";
-        private static IModHelper Helper;
         private bool _suitUpOnTravel = true;
 
         private void Start()
         {
-            Helper = ModHelper;
             ModHelper.Events.Subscribe<Flashlight>(Events.AfterStart);
             ModHelper.Events.Event += OnEvent;
 
