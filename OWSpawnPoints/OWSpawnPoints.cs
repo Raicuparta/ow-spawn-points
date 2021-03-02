@@ -1,11 +1,11 @@
 ﻿using OWML.Common;
 using OWML.ModHelper;
 using UnityEngine;
-using OWML.ModHelper.Events;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using OWML.Common.Menus;
+using OWML.Utils;
 
 namespace OWSpawnPoints
 {
@@ -61,7 +61,7 @@ namespace OWSpawnPoints
         {
             _fluidDetector = Locator.GetPlayerCamera().GetComponentInChildren<FluidDetector>();
 
-            var mainButton = ModHelper.Menus.PauseMenu.OptionsButton.Duplicate("Teleport to...");
+            var mainButton = ModHelper.Menus.PauseMenu.OptionsButton.Duplicate("TELEPORT");
 
             var shipSpawnMenu = ModHelper.Menus.PauseMenu.Copy("Ship Spawn Points");
             shipSpawnMenu.Buttons.ForEach(button => button.Hide());
