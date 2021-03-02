@@ -29,12 +29,12 @@ namespace OWSpawnPoints
             LoadManager.OnCompleteSceneLoad += OnSceneLoaded;
         }
 
-        public override void Configure(IModConfig config) 
+        public override void Configure(IModConfig config)
             => _suitUpOnTravel = config.GetSettingsValue<bool>("suitUpOnTravel");
 
         private void OnSceneLoaded(OWScene originalScene, OWScene scene)
         {
-            if (scene == OWScene.SolarSystem 
+            if (scene == OWScene.SolarSystem
                 || scene == OWScene.EyeOfTheUniverse)
             {
                 _isSolarSystemLoaded = true;
@@ -44,7 +44,7 @@ namespace OWSpawnPoints
 
         private void OnEvent(MonoBehaviour behaviour, Events ev)
         {
-            if (behaviour.GetType() == typeof(Flashlight) 
+            if (behaviour.GetType() == typeof(Flashlight)
                 && ev == Events.AfterStart)
             {
                 Init();
@@ -70,9 +70,9 @@ namespace OWSpawnPoints
 
             var sourceButton = shipSpawnMenu.Buttons[0];
 
-            mainButton.OnClick += () 
-                => (PlayerState.IsInsideShip() 
-                    ? shipSpawnMenu 
+            mainButton.OnClick += ()
+                => (PlayerState.IsInsideShip()
+                    ? shipSpawnMenu
                     : playerSpawnMenu)
                 .Open();
 
@@ -228,8 +228,8 @@ namespace OWSpawnPoints
             {
                 return astroObject.GetCustomName();
             }
-            else if (astroNameEnum == AstroObject.Name.None 
-                || astroName == null 
+            else if (astroNameEnum == AstroObject.Name.None
+                || astroName == null
                 || astroName == "")
             {
                 return astroObject.name;
@@ -304,7 +304,7 @@ namespace OWSpawnPoints
 
         private void LateUpdate()
         {
-            if (_isSolarSystemLoaded 
+            if (_isSolarSystemLoaded
                 && _saveFile.initialSpawnPoint != "")
             {
                 InstantWakeUp();
