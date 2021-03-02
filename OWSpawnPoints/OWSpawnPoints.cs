@@ -1,24 +1,22 @@
 ﻿using OWML.Common;
+using OWML.Common.Menus;
 using OWML.ModHelper;
-using UnityEngine;
-using System;
+using OWML.Utils;
 using System.Collections.Generic;
 using System.Linq;
-using OWML.Common.Menus;
-using OWML.Utils;
+using UnityEngine;
 
 namespace OWSpawnPoints
 {
     public class OWSpawnPoints : ModBehaviour
     {
         private FluidDetector _fluidDetector;
-        SpawnPoint _prevSpawnPoint;
-        AstroObject _prevAstroObject;
-        SaveFile _saveFile;
-        bool _isSolarSystemLoaded;
-        const string SAVE_FILE = "savefile.json";
-        static IModHelper Helper;
-        bool _suitUpOnTravel = true;
+        private SpawnPoint _prevSpawnPoint;
+        private SaveFile _saveFile;
+        private bool _isSolarSystemLoaded;
+        private const string SAVE_FILE = "savefile.json";
+        private static IModHelper Helper;
+        private bool _suitUpOnTravel = true;
 
         private void Start()
         {
@@ -29,19 +27,15 @@ namespace OWSpawnPoints
             _saveFile = ModHelper.Storage.Load<SaveFile>(SAVE_FILE);
 
             LoadManager.OnCompleteSceneLoad += OnSceneLoaded;
-
-            ModHelper.HarmonyHelper.AddPrefix<ProbePromptReceiver>("GainFocus", typeof(Patch), nameof(Patch.Enter));
-            ModHelper.HarmonyHelper.AddPrefix<ProbePromptReceiver>("LoseFocus", typeof(Patch), nameof(Patch.Exit));
         }
 
-        public override void Configure(IModConfig config)
-        {
-            _suitUpOnTravel = config.GetSettingsValue<bool>("suitUpOnTravel");
-        }
+        public override void Configure(IModConfig config) 
+            => _suitUpOnTravel = config.GetSettingsValue<bool>("suitUpOnTravel");
 
-        void OnSceneLoaded(OWScene originalScene, OWScene scene)
+        private void OnSceneLoaded(OWScene originalScene, OWScene scene)
         {
-            if (scene == OWScene.SolarSystem || scene == OWScene.EyeOfTheUniverse)
+            if (scene == OWScene.SolarSystem 
+                || scene == OWScene.EyeOfTheUniverse)
             {
                 _isSolarSystemLoaded = true;
                 SpawnAtInitialPoint();
@@ -50,7 +44,8 @@ namespace OWSpawnPoints
 
         private void OnEvent(MonoBehaviour behaviour, Events ev)
         {
-            if (behaviour.GetType() == typeof(Flashlight) && ev == Events.AfterStart)
+            if (behaviour.GetType() == typeof(Flashlight) 
+                && ev == Events.AfterStart)
             {
                 Init();
                 SpawnAtInitialPoint();
@@ -75,14 +70,21 @@ namespace OWSpawnPoints
 
             var sourceButton = shipSpawnMenu.Buttons[0];
 
-            mainButton.OnClick += () => (PlayerState.IsInsideShip() ? shipSpawnMenu : playerSpawnMenu).Open();
+            mainButton.OnClick += () 
+                => (PlayerState.IsInsideShip() 
+                    ? shipSpawnMenu 
+                    : playerSpawnMenu)
+                .Open();
 
-            var astroObjects = FindObjectsOfType<AstroObject>().ToList();
+            var spawnPointsWithNoAO = Resources.FindObjectsOfTypeAll<SpawnPoint>().ToList();
+            var astroObjects = Resources.FindObjectsOfTypeAll<AstroObject>().ToList();
             var astroSpawnPoints = new Dictionary<AstroObject, SpawnPoint[]>();
 
             foreach (var astroObject in astroObjects)
             {
-                astroSpawnPoints[astroObject] = astroObject.GetComponentsInChildren<SpawnPoint>(true);
+                var attachedSpawnPoints = astroObject.GetComponentsInChildren<SpawnPoint>(true);
+                astroSpawnPoints[astroObject] = attachedSpawnPoints;
+                spawnPointsWithNoAO = spawnPointsWithNoAO.Except(attachedSpawnPoints).ToList();
             }
 
             astroObjects.Sort((a, b) => astroSpawnPoints[a].Length.CompareTo(astroSpawnPoints[b].Length));
@@ -94,7 +96,7 @@ namespace OWSpawnPoints
                 ModHelper.Menus.PauseMenu.Close();
             }
 
-            void CreateSpawnPointButton(SpawnPoint spawnPoint, AstroObject astroObject, IModPopupMenu spawnMenu, string name)
+            void CreateSpawnPointButton(SpawnPoint spawnPoint, IModPopupMenu spawnMenu, string name)
             {
                 var subButton = spawnMenu.AddButton(sourceButton.Copy(name));
                 subButton.OnClick += () =>
@@ -103,7 +105,6 @@ namespace OWSpawnPoints
                     CloseMenu();
                     SpawnAt(spawnPoint);
                     _prevSpawnPoint = spawnPoint;
-                    _prevAstroObject = astroObject;
                 };
                 subButton.Show();
             }
@@ -122,7 +123,25 @@ namespace OWSpawnPoints
                 for (var i = 0; i < spawnPoints.Count; i++)
                 {
                     var point = spawnPoints[i];
-                    CreateSpawnPointButton(point, astroObject, subMenu, point.name);
+                    CreateSpawnPointButton(point, subMenu, point.name);
+                }
+            }
+
+            void CreateMiscSpawnPointList(List<SpawnPoint> spawnPoints, IModPopupMenu spawnMenu)
+            {
+                var subMenu = ModHelper.Menus.PauseMenu.Copy("Spawn Points");
+                subMenu.Buttons.ForEach(button => button.Hide());
+                subMenu.Menu.transform.localScale *= 0.5f;
+                subMenu.Menu.transform.localPosition *= 0.5f;
+
+                var subButton = spawnMenu.AddButton(sourceButton.Copy("<No Set AstroObject>"));
+                subButton.OnClick += () => subMenu.Open();
+                subButton.Show();
+
+                for (var i = 0; i < spawnPoints.Count; i++)
+                {
+                    var point = spawnPoints[i];
+                    CreateSpawnPointButton(point, subMenu, point.name);
                 }
             }
 
@@ -145,7 +164,7 @@ namespace OWSpawnPoints
                 }
                 else if (shipSpawnPoints.Count == 1)
                 {
-                    CreateSpawnPointButton(shipSpawnPoints[0], astroObject, shipSpawnMenu, astroName);
+                    CreateSpawnPointButton(shipSpawnPoints[0], shipSpawnMenu, $"{astroName} - {shipSpawnPoints[0].name}");
                 }
 
                 if (playerSpawnPoints.Count > 1)
@@ -154,8 +173,29 @@ namespace OWSpawnPoints
                 }
                 else if (playerSpawnPoints.Count == 1)
                 {
-                    CreateSpawnPointButton(playerSpawnPoints[0], astroObject, playerSpawnMenu, astroName);
+                    CreateSpawnPointButton(playerSpawnPoints[0], playerSpawnMenu, $"{astroName} - {shipSpawnPoints[0].name}");
                 }
+            }
+
+            var miscShipSpawns = spawnPointsWithNoAO.Where(point => point.IsShipSpawn()).ToList();
+            var miscPlayerSpawns = spawnPointsWithNoAO.Where(point => !point.IsShipSpawn()).ToList();
+
+            if (miscShipSpawns.Count > 1)
+            {
+                CreateMiscSpawnPointList(miscShipSpawns, shipSpawnMenu);
+            }
+            else if (miscShipSpawns.Count == 1)
+            {
+                CreateSpawnPointButton(miscShipSpawns[0], shipSpawnMenu, miscShipSpawns[0].name);
+            }
+
+            if (miscPlayerSpawns.Count > 1)
+            {
+                CreateMiscSpawnPointList(miscPlayerSpawns, playerSpawnMenu);
+            }
+            else if (miscPlayerSpawns.Count == 1)
+            {
+                CreateSpawnPointButton(miscPlayerSpawns[0], playerSpawnMenu, miscPlayerSpawns[0].name);
             }
 
             var clearSaveButton = sourceButton.Copy("RESET INITIAL SPAWN POINT");
@@ -179,7 +219,7 @@ namespace OWSpawnPoints
             playerSpawnMenu.AddButton(saveButton);
         }
 
-        string GetAstroObjectName(AstroObject astroObject)
+        private string GetAstroObjectName(AstroObject astroObject)
         {
             var astroNameEnum = astroObject.GetAstroObjectName();
             var astroName = astroNameEnum.ToString();
@@ -188,7 +228,9 @@ namespace OWSpawnPoints
             {
                 return astroObject.GetCustomName();
             }
-            else if (astroNameEnum == AstroObject.Name.None || astroName == null || astroName == "")
+            else if (astroNameEnum == AstroObject.Name.None 
+                || astroName == null 
+                || astroName == "")
             {
                 return astroObject.name;
             }
@@ -198,39 +240,25 @@ namespace OWSpawnPoints
 
         private void SetInitialSpawnPoint()
         {
-            _saveFile.initialAstroObject = _prevAstroObject.gameObject.name;
             _saveFile.initialSpawnPoint = _prevSpawnPoint.gameObject.name;
             ModHelper.Storage.Save(_saveFile, SAVE_FILE);
         }
 
         private void ResetInitialSpawnPoint()
         {
-            _saveFile.initialAstroObject = "";
             _saveFile.initialSpawnPoint = "";
             ModHelper.Storage.Save(_saveFile, SAVE_FILE);
         }
 
-        void SpawnAtInitialPoint()
+        private void SpawnAtInitialPoint()
         {
-            var astroName = _saveFile.initialAstroObject;
             var spawnPointName = _saveFile.initialSpawnPoint;
-            if (astroName == "" || spawnPointName == "") return;
-
-            var astroObjectGO = GameObject.Find(astroName);
-            if (astroObjectGO == null) return;
-
-            var astroObject = astroObjectGO.GetComponent<AstroObject>();
-            if (astroObject == null) return;
-
-            var spawnPoints = astroObject.GetComponentsInChildren<SpawnPoint>();
-            foreach (var point in spawnPoints)
+            if (spawnPointName == "")
             {
-                if (point.gameObject.name == spawnPointName)
-                {
-                    FindObjectOfType<PlayerSpawner>().SetInitialSpawnPoint(point);
-                    return;
-                }
+                return;
             }
+            var point = FindObjectsOfType<SpawnPoint>().First(x => x.gameObject.name == spawnPointName);
+            FindObjectOfType<PlayerSpawner>().SetInitialSpawnPoint(point);
         }
 
         private void SpawnAt(SpawnPoint point)
@@ -274,23 +302,12 @@ namespace OWSpawnPoints
             Locator.GetPlayerSuit().SuitUp();
         }
 
-        void LateUpdate()
+        private void LateUpdate()
         {
-            if (_isSolarSystemLoaded && _saveFile.initialAstroObject != "" && _saveFile.initialSpawnPoint != "")
+            if (_isSolarSystemLoaded 
+                && _saveFile.initialSpawnPoint != "")
             {
                 InstantWakeUp();
-            }
-        }
-
-        public class Patch
-        {
-            public static void Enter()
-            {
-                Helper.Console.WriteLine("Enter");
-            }
-            public static void Exit()
-            {
-                Helper.Console.WriteLine("Exit");
             }
         }
     }
