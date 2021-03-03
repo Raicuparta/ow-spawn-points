@@ -357,4 +357,3 @@ MigrationBackup/
 
 # Unecessary asset bundle file
 /AssetBundles/AssetBundles*
-OWSpawnPoints/OWSpawnPoints.csproj.user
