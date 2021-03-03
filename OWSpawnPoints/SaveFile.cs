@@ -1,13 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace OWSpawnPoints
+﻿namespace OWSpawnPoints
 {
-    class SaveFile
-    {
-        public string initialSpawnPoint = "";
-        public string initialAstroObject = "";
-    }
+	internal class SaveFile
+	{
+		public string initialSpawnPoint = "";
+	}
 }
