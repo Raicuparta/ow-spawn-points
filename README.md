@@ -1,5 +1,7 @@
 # Spawn Points Teleport
 
+## ⚠️ Unfortunately this does not work on the Steam version of the game, only Epic version is supported.
+
 Outer Wilds mod for teleporting to spawn points.
 
 Install the mod with the [Outer Wilds Mod Manager](https://outerwildsmods.com/mod-manager/). After installing, you should see a new entry in the pause menu ("Teleport to..."). Select the destination from the list.
