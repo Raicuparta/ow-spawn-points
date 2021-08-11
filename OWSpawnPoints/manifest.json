@@ -2,7 +2,7 @@
   "filename": "OWSpawnPoints.dll",
   "author": "Raicuparta",
   "name": "Spawn Points Teleport",
-  "description": "Adds a menu that lets you teleport around the solar system.",
+  "description": "Adds a menu that lets you teleport around the solar system. (Supports only Epic Store version)",
   "uniqueName": "Raicuparta.OWSpawnPoints",
   "version": "0.5.0",
   "owmlVersion": "1.1.8"
